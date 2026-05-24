@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>AI Desk Pet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 300px; overflow: hidden; user-select: none; }
+    .pet-container { display: flex; flex-direction: column; align-items: center; padding: 10px; -webkit-app-region: drag; }
+    .pet-display { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 8px; transition: transform 0.2s; }
+    .pet-display:hover { transform: scale(1.1); }
+    .pet-display.bounce { animation: bounce 0.5s; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .status-bar { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px 10px; color: white; font-size: 10px; margin-bottom: 8px; display: flex; gap: 10px; }
+    .status-item { display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+    .comment-bubble { background: white; color: #333; padding: 8px 12px; border-radius: 12px; max-width: 170px; font-size: 11px; margin-bottom: 8px; position: relative; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; }
+    .comment-bubble.show { opacity: 1; transform: translateY(0); }
+    .comment-bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: white; border-bottom: none; }
+    .controls { display: flex; gap: 6px; margin-top: 5px; -webkit-app-region: no-drag; }
+    .btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: background 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.3); }
+    .btn.settings { background: #f59e0b; }
+    .stats { font-size: 9px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <div class="pet-container">
+    <div class="pet-display" id="pet">🐱</div>
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot" id="statusDot"></div><span id="statusText">Active</span></div>
+      <div class="status-item"><span>📸</span><span id="screenshotCount">0</span></div>
+    </div>
+    <div class="comment-bubble" id="commentBubble">你好！我是你的AI宠物！</div>
+    <div class="controls">
+      <button class="btn" id="btnChat">💬</button>
+      <button class="btn settings" id="btnSettings">⚙️</button>
+    </div>
+    <div class="stats" id="memoryStats">记忆: 0 | 归档: 0</div>
+  </div>
+
+  <script>
+    let currentLang = 'zh';
+
+    const pet = document.getElementById('pet');
+    const commentBubble = document.getElementById('commentBubble');
+    const screenshotCount = document.getElementById('screenshotCount');
+    const memoryStats = document.getElementById('memoryStats');
+    const statusText = document.getElementById('statusText');
+
+    async function loadLanguage() {
+      try {
+        const settings = await window.electronAPI.getSettings();
+        currentLang = settings.language || 'zh';
+        updateUIText();
+      } catch (e) { console.error('Error loading language:', e); }
+    }
+
+    function updateUIText() {
+      statusText.textContent = currentLang === 'zh' ? '活跃' : 'Active';
+      commentBubble.textContent = currentLang === 'zh' ? '你好！我是你的AI宠物！' : 'Hello! I am your AI pet!';
+    }
+
+    async function updateMemoryStats() {
+      try {
+        const stats = await window.electronAPI.getMemoryStats();
+        const mem = currentLang === 'zh' ? '记忆' : 'Memory';
+        const cold = currentLang === 'zh' ? '归档' : 'Archive';
+        memoryStats.textContent = mem + ': ' + stats.activeCount + ' | ' + cold + ': ' + (stats.archiveCount || 0);
+        screenshotCount.textContent = stats.totalScreenshots;
+      } catch (e) { console.error('Error getting stats:', e); }
+    }
+
+    function showComment(text) {
+      commentBubble.textContent = text;
+      commentBubble.classList.add('show');
+      pet.classList.add('bounce');
+      setTimeout(() => pet.classList.remove('bounce'), 500);
+      // 15秒后隐藏评论
+      setTimeout(() => commentBubble.classList.remove('show'), 15000);
+    }
+
+    document.getElementById('btnChat').addEventListener('click', () => {
+      window.electronAPI.openChatWindow();
+    });
+
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      window.electronAPI.openSettingsWindow();
+    });
+
+    window.electronAPI.onScreenshotTaken((data) => {
+      screenshotCount.textContent = data.count;
+      updateMemoryStats();
+    });
+
+    window.electronAPI.onNewComment((comment) => {
+      showComment(comment);
+    });
+
+    loadLanguage();
+    updateMemoryStats();
+    setInterval(updateMemoryStats, 10000);
+  </script>
+</body>
+</html>

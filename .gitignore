@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Data directory (local storage - contains config, context, screenshots)
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,22 @@
+{
+  "name": "ai-desk-pet",
+  "version": "1.0.0",
+  "description": "AI Desktop Pet with screenshot monitoring and vision recognition",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": ["electron", "ai", "desktop-pet"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.25.0",
+    "electron-store": "^8.1.0",
+    "openai": "^4.28.0",
+    "uuid": "^9.0.0"
+  }
+}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>Settings - AI Desk Pet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 15px; }
+    h2 { color: #333; margin-bottom: 15px; font-size: 16px; }
+    .section { background: white; border-radius: 10px; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .section-title { color: #667eea; font-size: 13px; font-weight: bold; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+    .setting-row { margin-bottom: 10px; }
+    .setting-row label { display: block; color: #666; font-size: 11px; margin-bottom: 4px; }
+    .setting-row input[type="text"], .setting-row input[type="password"], .setting-row select { width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 11px; }
+    .setting-row input[type="range"] { width: 100%; }
+    .value-display { text-align: right; color: #667eea; font-weight: bold; font-size: 12px; }
+    .mode-toggle { display: flex; gap: 8px; margin-bottom: 8px; }
+    .mode-btn { flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+    .mode-btn.active { background: #667eea; color: white; border-color: #667eea; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+    .toggle { width: 36px; height: 18px; background: #ccc; border-radius: 9px; position: relative; cursor: pointer; transition: background 0.2s; }
+    .toggle.active { background: #667eea; }
+    .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+    .toggle.active::after { transform: translateX(18px); }
+    .btn { background: #667eea; border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; width: 100%; margin-top: 8px; }
+    .btn:hover { background: #5a6fd6; }
+    .btn.danger { background: #ef4444; }
+    .btn.danger:hover { background: #dc2626; }
+    .hint { font-size: 9px; color: #999; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <h2>⚙️ 设置 Settings</h2>
+
+  <!-- Language -->
+  <div class="section">
+    <div class="section-title">🌐 语言 Language</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="langZh">中文</button>
+      <button class="mode-btn" id="langEn">English</button>
+    </div>
+  </div>
+
+  <!-- Vision Model -->
+  <div class="section">
+    <div class="section-title">🔍 图像识别模型 Vision Model</div>
+    <div class="setting-row">
+      <label>API 模式 Mode</label>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="visionModeOpenai">OpenAI</button>
+        <button class="mode-btn" id="visionModeAnthropic">Anthropic</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <label>Base URL</label>
+      <input type="text" id="visionBaseUrl" placeholder="https://api.openai.com/v1">
+      <div class="hint">留空使用默认地址</div>
+    </div>
+    <div class="setting-row">
+      <label>模型名称 Model</label>
+      <input type="text" id="visionModel" placeholder="gpt-4o / claude-3-5-sonnet-20241022">
+    </div>
+    <div class="setting-row">
+      <label>API Key</label>
+      <input type="password" id="visionApiKey" placeholder="sk-...">
+    </div>
+  </div>
+
+  <!-- Text Model -->
+  <div class="section">
+    <div class="section-title">💬 评论生成模型 Text Model</div>
+    <div class="setting-row">
+      <label>API 模式 Mode</label>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="textModeOpenai">OpenAI</button>
+        <button class="mode-btn" id="textModeAnthropic">Anthropic</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <label>Base URL</label>
+      <input type="text" id="textBaseUrl" placeholder="https://api.openai.com/v1">
+      <div class="hint">留空使用默认地址</div>
+    </div>
+    <div class="setting-row">
+      <label>模型名称 Model</label>
+      <input type="text" id="textModel" placeholder="gpt-4o / claude-3-5-sonnet-20241022">
+    </div>
+    <div class="setting-row">
+      <label>API Key</label>
+      <input type="password" id="textApiKey" placeholder="sk-...">
+    </div>
+  </div>
+
+  <!-- Comment Settings -->
+  <div class="section">
+    <div class="section-title">⚡ 评论设置</div>
+    <div class="setting-row toggle-row">
+      <label>开启评论 Enable Comments</label>
+      <div class="toggle active" id="toggleComments"></div>
+    </div>
+    <div class="setting-row">
+      <label>评论积极性 Enthusiasm</label>
+      <input type="range" id="enthusiasmRange" min="1" max="10" value="5">
+      <div class="value-display" id="enthusiasmValue">5</div>
+    </div>
+  </div>
+
+  <!-- Screenshot Settings -->
+  <div class="section">
+    <div class="section-title">📸 截图设置</div>
+    <div class="setting-row">
+      <label>间隔(秒) Interval</label>
+      <input type="range" id="intervalRange" min="3" max="30" value="5">
+      <div class="value-display" id="intervalValue">5</div>
+    </div>
+    <div class="setting-row toggle-row">
+      <label>压缩图片 Compress Image</label>
+      <div class="toggle active" id="toggleCompress"></div>
+    </div>
+    <div class="setting-row" id="qualityRow">
+      <label>压缩质量 Quality</label>
+      <input type="range" id="qualityRange" min="30" max="100" value="70">
+      <div class="value-display" id="qualityValue">70%</div>
+    </div>
+    <div class="hint">压缩可加快 API 调用速度，但可能降低识别精度</div>
+  </div>
+
+  <button class="btn" id="btnSave">💾 保存设置 Save</button>
+  <button class="btn danger" id="btnClearMemory">🗑️ 清空记忆 Clear Memory</button>
+
+  <script>
+    let settings = {};
+
+    async function loadSettings() {
+      settings = await window.electronAPI.getSettings();
+
+      // Language
+      document.getElementById('langZh').classList.toggle('active', settings.language === 'zh');
+      document.getElementById('langEn').classList.toggle('active', settings.language === 'en');
+
+      // Vision
+      const visionMode = settings.visionMode || 'openai';
+      document.getElementById('visionModeOpenai').classList.toggle('active', visionMode === 'openai');
+      document.getElementById('visionModeAnthropic').classList.toggle('active', visionMode === 'anthropic');
+      document.getElementById('visionBaseUrl').value = settings.visionBaseUrl || '';
+      document.getElementById('visionModel').value = settings.visionModel || '';
+      document.getElementById('visionApiKey').value = settings.visionApiKey || '';
+
+      // Text
+      const textMode = settings.textMode || 'openai';
+      document.getElementById('textModeOpenai').classList.toggle('active', textMode === 'openai');
+      document.getElementById('textModeAnthropic').classList.toggle('active', textMode === 'anthropic');
+      document.getElementById('textBaseUrl').value = settings.textBaseUrl || '';
+      document.getElementById('textModel').value = settings.textModel || '';
+      document.getElementById('textApiKey').value = settings.textApiKey || '';
+
+      // Other
+      document.getElementById('enthusiasmRange').value = settings.enthusiasmLevel || 5;
+      document.getElementById('enthusiasmValue').textContent = settings.enthusiasmLevel || 5;
+      document.getElementById('intervalRange').value = (settings.screenshotInterval || 5000) / 1000;
+      document.getElementById('intervalValue').textContent = (settings.screenshotInterval || 5000) / 1000;
+      document.getElementById('toggleComments').classList.toggle('active', settings.commentsEnabled !== false);
+
+      // Image compression
+      document.getElementById('toggleCompress').classList.toggle('active', settings.compressImage !== false);
+      document.getElementById('qualityRange').value = (settings.imageQuality || 0.7) * 100;
+      document.getElementById('qualityValue').textContent = Math.round((settings.imageQuality || 0.7) * 100) + '%';
+      document.getElementById('qualityRow').style.display = settings.compressImage !== false ? 'block' : 'none';
+    }
+
+    async function saveSettings() {
+      settings.language = document.getElementById('langZh').classList.contains('active') ? 'zh' : 'en';
+
+      // Vision
+      settings.visionMode = document.getElementById('visionModeOpenai').classList.contains('active') ? 'openai' : 'anthropic';
+      settings.visionBaseUrl = document.getElementById('visionBaseUrl').value.trim();
+      settings.visionModel = document.getElementById('visionModel').value.trim();
+      settings.visionApiKey = document.getElementById('visionApiKey').value.trim();
+
+      // Text
+      settings.textMode = document.getElementById('textModeOpenai').classList.contains('active') ? 'openai' : 'anthropic';
+      settings.textBaseUrl = document.getElementById('textBaseUrl').value.trim();
+      settings.textModel = document.getElementById('textModel').value.trim();
+      settings.textApiKey = document.getElementById('textApiKey').value.trim();
+
+      // Other
+      settings.enthusiasmLevel = parseInt(document.getElementById('enthusiasmRange').value);
+      settings.screenshotInterval = parseInt(document.getElementById('intervalRange').value) * 1000;
+      settings.commentsEnabled = document.getElementById('toggleComments').classList.contains('active');
+
+      // Image compression
+      settings.compressImage = document.getElementById('toggleCompress').classList.contains('active');
+      settings.imageQuality = parseInt(document.getElementById('qualityRange').value) / 100;
+
+      await window.electronAPI.saveSettings(settings);
+      alert('设置已保存 Settings saved');
+    }
+
+    // Language toggle
+    document.getElementById('langZh').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('langEn').classList.remove('active');
+    });
+    document.getElementById('langEn').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('langZh').classList.remove('active');
+    });
+
+    // Vision mode toggle
+    document.getElementById('visionModeOpenai').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('visionModeAnthropic').classList.remove('active');
+    });
+    document.getElementById('visionModeAnthropic').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('visionModeOpenai').classList.remove('active');
+    });
+
+    // Text mode toggle
+    document.getElementById('textModeOpenai').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('textModeAnthropic').classList.remove('active');
+    });
+    document.getElementById('textModeAnthropic').addEventListener('click', function() {
+      this.classList.add('active');
+      document.getElementById('textModeOpenai').classList.remove('active');
+    });
+
+    // Toggle comments
+    document.getElementById('toggleComments').addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+
+    // Toggle compress
+    document.getElementById('toggleCompress').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('qualityRow').style.display = this.classList.contains('active') ? 'block' : 'none';
+    });
+
+    // Range sliders
+    document.getElementById('enthusiasmRange').addEventListener('input', function() {
+      document.getElementById('enthusiasmValue').textContent = this.value;
+    });
+    document.getElementById('intervalRange').addEventListener('input', function() {
+      document.getElementById('intervalValue').textContent = this.value;
+    });
+    document.getElementById('qualityRange').addEventListener('input', function() {
+      document.getElementById('qualityValue').textContent = this.value + '%';
+    });
+
+    // Save button
+    document.getElementById('btnSave').addEventListener('click', saveSettings);
+
+    // Clear memory
+    document.getElementById('btnClearMemory').addEventListener('click', async function() {
+      if (confirm('确定清空所有记忆吗？')) {
+        await window.electronAPI.clearMemory();
+        alert('记忆已清空');
+      }
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
